@@ -44,7 +44,7 @@ install_requires =  setup_requires + ['Mako>=1.0.1',
                       'pillow',
                       'h5py>=2.10',
                       'jinja2',
-                      'lalsuite',
+                      #'lalsuite',
                       'astropy>=2.0.3,!=4.2.1,!=4.0.5',
                       'mpld3>=0.3',
                       'lscsoft-glue>=1.59.3',
@@ -212,8 +212,8 @@ ext = []
 cython_compile_args = ['-O3', '-w', '-ffast-math',
                        '-ffinite-math-only']
 
-if platform.machine() == 'x86_64':
-    cython_compile_args.append('-msse4.2')
+#if platform.machine() == 'x86_64':
+#    cython_compile_args.append('-msse4.2')
 cython_link_args = []
 
 # Mac's clang compiler doesn't have openMP support by default. Therefore
