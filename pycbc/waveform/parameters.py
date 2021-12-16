@@ -534,6 +534,18 @@ dbeta2 = Parameter("dbeta2",
 dbeta3 = Parameter("dbeta3",
                 dtype=float, default=0., label=r"$d\beta_3$",
                 description="Intermediate testingGR parameter.")
+
+# < axion modification >
+axion_lambda = Parameter("axion_lambda", dtype=float, default=None, label=r"$\lambda_a$",
+                description="modified waveform: axion lambda")
+axion_q = Parameter("axion_q", dtype=float, default=None, label=r"$q_a$",
+                description="modified waveform: axion q")
+axion_logq = Parameter("axion_logq", dtype=float, default=None, label=r"${\rm log_{10}}\, q$",
+                description="modified waveform: axion log q")
+axion_dq = Parameter("axion_dq", dtype=float, default=None, label=r"$\delta q$",
+                description="modified waveform: axion dq")
+# </ axion modification >
+
 #
 # =============================================================================
 #

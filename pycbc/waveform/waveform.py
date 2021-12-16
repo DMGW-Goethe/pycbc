@@ -170,6 +170,18 @@ def _check_lal_pars(p):
         lalsimulation.SimInspiralWaveformParamsInsertNonGRDBeta2(lal_pars,p['dbeta2'])
     if p['dbeta3'] is not None:
         lalsimulation.SimInspiralWaveformParamsInsertNonGRDBeta3(lal_pars,p['dbeta3'])
+
+    # < axion modification >
+    if 'axion_lambda' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertOurParams11(lal_pars, p['axion_lambda'])
+    if 'axion_q' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertOurParams12(lal_pars, p['axion_q'])
+    elif 'axion_logq' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertOurParams12(lal_pars, 10.**p['axion_logq'] if p['axion_logq'] > -20 else 0.)
+    if 'axion_dq' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertOurParams13(lal_pars, p['axion_dq'])
+    # </ axion modification >
+
     return lal_pars
 
 def _lalsim_td_waveform(**p):
