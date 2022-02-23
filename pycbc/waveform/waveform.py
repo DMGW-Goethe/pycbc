@@ -176,10 +176,12 @@ def _check_lal_pars(p):
         lalsimulation.SimInspiralWaveformParamsInsertOurParams11(lal_pars, p['axion_lambda'])
     if 'axion_q' in p:
         lalsimulation.SimInspiralWaveformParamsInsertOurParams12(lal_pars, p['axion_q'])
-    elif 'axion_logq' in p:
-        lalsimulation.SimInspiralWaveformParamsInsertOurParams12(lal_pars, 10.**p['axion_logq'] if p['axion_logq'] > -20 else 0.)
+    #elif 'axion_logq' in p:
+    #    lalsimulation.SimInspiralWaveformParamsInsertOurParams12(lal_pars, 10.**p['axion_logq'] if p['axion_logq'] > -20 else 0.)
     if 'axion_dq' in p:
         lalsimulation.SimInspiralWaveformParamsInsertOurParams13(lal_pars, p['axion_dq'])
+    if 'axion_p' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertOurParams14(lal_pars, p['axion_p'])
     # </ axion modification >
 
     return lal_pars

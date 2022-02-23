@@ -544,6 +544,8 @@ axion_logq = Parameter("axion_logq", dtype=float, default=None, label=r"${\rm lo
                 description="modified waveform: axion log q")
 axion_dq = Parameter("axion_dq", dtype=float, default=None, label=r"$\delta q$",
                 description="modified waveform: axion dq")
+axion_p = Parameter("axion_p", dtype=float, default=None, label=r"$p_a$",
+                description="modified waveform: axion p")
 # </ axion modification >
 
 #
@@ -570,6 +572,10 @@ orientation_params = ParameterList\
 # the extrinsic parameters of a waveform
 extrinsic_params = orientation_params + location_params
 
+# < axion modification >
+axion_parameters = ParameterList\
+        ([axion_lambda, axion_q, axion_dq, axion_p])
+# </ axion modification >
 
 # testing GR parameters
 testingGR_params = ParameterList\
@@ -577,13 +583,15 @@ testingGR_params = ParameterList\
       dchi7, dalpha1, dalpha2, dalpha3, dalpha4, dalpha5,
       dbeta1, dbeta2, dbeta3])
 
+
 # intrinsic parameters of a CBC waveform. Some of these are not recognized
 # by every waveform model
 cbc_intrinsic_params = ParameterList\
     ([mass1, mass2, spin1x, spin1y, spin1z, spin2x, spin2y, spin2z,
       eccentricity, lambda1, lambda2, dquad_mon1, dquad_mon2, lambda_octu1,
       lambda_octu2, quadfmode1, quadfmode2, octufmode1, octufmode2]) + \
-    testingGR_params
+     axion_parameters + testingGR_params
+
 
 # the parameters of a cbc in the radiation frame
 cbc_rframe_params = cbc_intrinsic_params + orientation_params
