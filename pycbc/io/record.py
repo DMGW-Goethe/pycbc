@@ -31,6 +31,7 @@ waves.
 import types, re, copy, numpy, inspect
 from ligo.lw import types as ligolw_types
 from pycbc import coordinates, conversions, cosmology
+from pycbc.population import population_models
 from pycbc.waveform import parameters
 
 # what functions are given to the eval in FieldArray's __getitem__:
@@ -483,7 +484,8 @@ def add_fields(input_array, arrays, names=None, assubarray=False):
 
 # We'll include functions in various pycbc modules in FieldArray's function
 # library. All modules used must have an __all__ list defined.
-_modules_for_functionlib = [conversions, coordinates, cosmology]
+_modules_for_functionlib = [conversions, coordinates, cosmology,
+                            population_models]
 _fieldarray_functionlib = {_funcname : getattr(_mod, _funcname)
                               for _mod in _modules_for_functionlib
                               for _funcname in getattr(_mod, '__all__')}
@@ -1178,8 +1180,10 @@ class FieldArray(numpy.recarray):
             dtype = list(columns.items())
         # get the values
         if _default_types_status['ilwd_as_int']:
+            # columns like `process:process_id` have corresponding attributes
+            # with names that are only the part after the colon, so we split
             input_array = \
-                [tuple(getattr(row, col) if dt != 'ilwd:char'
+                [tuple(getattr(row, col.split(':')[-1]) if dt != 'ilwd:char'
                        else int(getattr(row, col))
                        for col,dt in columns.items())
                  for row in table]
