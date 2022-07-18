@@ -19,7 +19,7 @@
 import logging
 import shlex
 from abc import ABCMeta
-import numpy
+import numpy as np
 
 from pycbc import filter as pyfilter
 from pycbc.waveform import (NoWaveformError, FailedWaveformError)
@@ -127,8 +127,8 @@ class BaseGaussianNoise(BaseDataModel, metaclass=ABCMeta):
                     "which will be used for all detectors")
 
         # check that the data sets all have the same delta fs and delta ts
-        dts = numpy.array([d.delta_t for d in self.data.values()])
-        dfs = numpy.array([d.delta_f for d in self.data.values()])
+        dts = np.array([d.delta_t for d in self.data.values()])
+        dfs = np.array([d.delta_f for d in self.data.values()])
         if all(dts == dts[0]) and all(dfs == dfs[0]):
             self.all_ifodata_same_rate_length = True
         else:
@@ -242,7 +242,7 @@ class BaseGaussianNoise(BaseDataModel, metaclass=ABCMeta):
         for det, d in self._data.items():
             if psds is None:
                 # No psd means assume white PSD
-                p = FrequencySeries(numpy.ones(int(self._N[det]/2+1)),
+                p = FrequencySeries(np.ones(int(self._N[det]/2+1)),
                                     delta_f=d.delta_f)
             else:
                 # copy for storage
@@ -252,10 +252,10 @@ class BaseGaussianNoise(BaseDataModel, metaclass=ABCMeta):
             # only set weight in band we will analyze
             kmin = self._kmin[det]
             kmax = self._kmax[det]
-            invp = FrequencySeries(numpy.zeros(len(p)), delta_f=p.delta_f)
+            invp = FrequencySeries(np.zeros(len(p)), delta_f=p.delta_f)
             invp[kmin:kmax] = 1./p[kmin:kmax]
             self._invpsds[det] = invp
-            self._weight[det] = numpy.sqrt(4 * invp.delta_f * invp)
+            self._weight[det] = np.sqrt(4 * invp.delta_f * invp)
             self._whitened_data[det] = d.copy()
             self._whitened_data[det] *= self._weight[det]
         # set the lognl and lognorm; we'll get this by just calling lognl
@@ -325,8 +325,8 @@ class BaseGaussianNoise(BaseDataModel, metaclass=ABCMeta):
             dt = self._whitened_data[det].delta_t
             kmin = self._kmin[det]
             kmax = self._kmax[det]
-            lognorm = -float(self._N[det]*numpy.log(numpy.pi*self._N[det]*dt)/2.
-                             + numpy.log(p[kmin:kmax]).sum())
+            lognorm = -float(self._N[det]*np.log(np.pi*self._N[det]*dt)/2.
+                             + np.log(p[kmin:kmax]).sum())
             self._lognorm[det] = lognorm
             return self._lognorm[det]
 
@@ -759,9 +759,9 @@ class GaussianNoise(BaseGaussianNoise):
     Using the same model, evaluate the log likelihood ratio at several points
     in time and check that the max is at tsig:
 
-    >>> import numpy
-    >>> times = numpy.linspace(tsig-1, tsig+1, num=101)
-    >>> loglrs = numpy.zeros(len(times))
+    >>> import numpy as np
+    >>> times = np.linspace(tsig-1, tsig+1, num=101)
+    >>> loglrs = np.zeros(len(times))
     >>> for (ii, t) in enumerate(times):
     ...     model.update(tc=t)
     ...     loglrs[ii] = model.loglr
@@ -820,6 +820,76 @@ class GaussianNoise(BaseGaussianNoise):
                     recalibration=self.recalibration,
                     gates=self.gates, **self.static_params)
 
+    def _Ls2lam_dq(params):
+        """
+        Calculates tidal deformability Lambda1, Lambda2 from the mass ratio
+        Values taken from https://arxiv.org/pdf/1804.03221.pdf
+        """
+        b = np.matrix([[-27.7408, 8.42358], [122.686, -19.7551], [-175.496, 133.708]])
+        c = np.matrix([[-25.5593, 5.58527], [92.0337, 26.8586], [-70.247, -56.3076]])
+        a = np.array([0.36, -0.0355, 0.000705])
+        mus = np.array([137.1252739, -32.8026613, 0.5168637, -11.2765281, 14.9499544, -4.6638851])
+        sigs= np.array([-0.0000739, 0.0103778, 0.4581717, -0.8341913, -201.4323962, 273.9268276, -71.2342246])
+        n = 0.743
+
+        #print("self.current_params:", self.current_params)
+        m1 = params['mass1']
+        m2 = params['mass2']
+        Ls =  params['tidal_ls']
+        axion_q =  params['axion_q']
+        qflip = m2/m1
+
+        Fnpow = qflip**(10./(3.-n))
+        Fn = (1. - Fnpow)/(1. + Fnpow)
+
+        # See eq (1) of https://arxiv.org/pdf/1804.03221.pdf
+        Ls_i = np.matrix([Ls**(-i/5.) for i in range(1,4)])
+        q_j = np.matrix([[qflip**j] for j in range(1,3)])
+        La = Fn* Ls * (1. + Ls_i*b*q_j) / (1. + Ls_i*c*q_j)
+        La = La[0,0]
+
+        # See eq (4)-(10) of https://arxiv.org/pdf/1804.03221.pdf
+        mu_ls = mus[0]/Ls/Ls +  mus[1]/Ls +  mus[2]
+        mu_q = mus[3]*qflip*qflip +  mus[4]*qflip +  mus[5]
+        mu_lsq = (mu_ls+mu_q)/2.
+
+        sig_ls = sigs[0]*Ls**(3./2.) + sigs[1]*Ls + sigs[2]*Ls**(1./2) + sigs[3]
+        sig_q = sigs[4]*qflip*qflip + sigs[5]*qflip + sigs[6]
+        sig_lsq = np.sqrt(sig_ls**2 + sig_q**2)
+        La += np.random.normal(mu_lsq, sig_lsq)
+
+
+        lam1 = Ls - La
+        lam2 = Ls + La
+
+        if lam1<0 or lam1>lam2: # TODO: Check rate of occurence
+            lam1=lam2=1.
+            C1=C2=1.
+            axion_q = 1.
+        else:
+            # See eq (78) of https://arxiv.org/pdf/1608.02582.pdf
+            C1 = a[0] + a[1]*np.log(lam1) + a[2]*np.log(lam1)**2
+            C2 = a[0] + a[1]*np.log(lam2) + a[2]*np.log(lam2)**2
+
+        # TODO: check significance of unused parameters
+        #signq = np.sign(axion_q)
+        #axiongamma = qflip * signq*C2/(C1*qflip) # qflip * signq*(m1/C1)/(m2/C2)
+        #axion_gamma = signq * C2/C1
+        #axion_dq = np.sqrt(axionq/axion_gamma)*(1-axion_gamma)
+
+        params.update(tidal_ls=0) # not used in wf genetation
+        params.update(lambda1=lam1)
+        params.update(lambda2=lam2)
+
+        # see below eq(13) of https://arxiv.org/pdf/2105.13963.pdf
+        # TODO: check significance of m_a=0 condition
+        axion_p = (m1/C1+m2/C2)/(16.0*(m1+m2))
+        params.update(axion_p=axion_p)
+
+        #print('params:', params)
+        return params
+
+
     @property
     def _extra_stats(self):
         """Adds ``loglr``, plus ``cplx_loglr`` and ``optimal_snrsq`` in each
@@ -832,12 +902,12 @@ class GaussianNoise(BaseGaussianNoise):
         """Convenience function to set loglr values if no waveform generated.
         """
         for det in self._data:
-            setattr(self._current_stats, 'loglikelihood', -numpy.inf)
+            setattr(self._current_stats, 'loglikelihood', -np.inf)
             setattr(self._current_stats, '{}_cplx_loglr'.format(det),
-                    -numpy.inf)
+                    -np.inf)
             # snr can't be < 0 by definition, so return 0
             setattr(self._current_stats, '{}_optimal_snrsq'.format(det), 0.)
-        return -numpy.inf
+        return -np.inf
 
     def _loglr(self):
         r"""Computes the log likelihood ratio,
@@ -856,6 +926,8 @@ class GaussianNoise(BaseGaussianNoise):
             The value of the log likelihood ratio.
         """
         params = self.current_params
+        params = GaussianNoise._Ls2lam_dq(params)
+
         try:
             if self.all_ifodata_same_rate_length:
                 wfs = self.waveform_generator.generate(**params)
