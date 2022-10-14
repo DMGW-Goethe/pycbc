@@ -25,9 +25,9 @@ Want to get going using PyCBC?
 
  * [Try out our tutorials](https://github.com/gwastro/PyCBC-Tutorials). No software installation required and these can run entirely from the browser.
 
-Quick Installation
+Installation (assumes lalsuite to have been installed locally)
 ```
-pip install pycbc
+pip install -e .
 ```
 
 To test the code on your machine
