@@ -170,6 +170,23 @@ def _check_lal_pars(p):
         lalsimulation.SimInspiralWaveformParamsInsertNonGRDBeta2(lal_pars,p['dbeta2'])
     if p['dbeta3'] is not None:
         lalsimulation.SimInspiralWaveformParamsInsertNonGRDBeta3(lal_pars,p['dbeta3'])
+
+    # Modified Gravity Parameters
+    if 'mg_m_s' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertMGParams1(lal_pars, p['mg_m_s'])
+    if 'mg_c_3' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertMGParams2(lal_pars, p['mg_c_3'])
+    if 'mg_q_1' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertMGParams3(lal_pars, p['mg_q_1'])
+    if 'mg_q_2' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertMGParams4(lal_pars, p['mg_q_2'])
+    if 'mg_log_m_s' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertMGParams1(lal_pars, 10**(p['mg_log_m_s']))
+    if 'mg_log_q_1' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertMGParams3(lal_pars, 10**(p['mg_log_q_1']))
+    if 'mg_log_q_2' in p:
+        lalsimulation.SimInspiralWaveformParamsInsertMGParams4(lal_pars, 10**(p['mg_log_q_2']))
+
     return lal_pars
 
 def _lalsim_td_waveform(**p):

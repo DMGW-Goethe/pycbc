@@ -534,6 +534,35 @@ dbeta2 = Parameter("dbeta2",
 dbeta3 = Parameter("dbeta3",
                 dtype=float, default=0., label=r"$d\beta_3$",
                 description="Intermediate testingGR parameter.")
+
+
+#
+# f(R) parameters
+#
+mg_m_s = Parameter("mg_m_s", dtype=float, default=None, label=r"m_s",
+                description="modified Gravity parameter: scalar mass")
+
+mg_c_3 = Parameter("mg_c_3", dtype=float, default=0., label=r"c_3",
+                description="modified Gravity parameter: cubic self-interaction")
+
+mg_q_1 = Parameter("mg_q_1", dtype=float, default=0., label=r"q_1",
+                description="modified Gravity parameter: charge of 1st object")
+
+mg_q_2 = Parameter("mg_q_2", dtype=float, default=0., label=r"q_2",
+                description="modified Gravity parameter: charge of 2nd object")
+
+mg_log_m_s = Parameter("mg_log_m_s", dtype=float, default=0., label=r"\log10 m_s",
+                description="modified Gravity parameter: log10 of scalar mass")
+
+mg_log_q_1 = Parameter("mg_log_q_1", dtype=float, default=0., label=r"\log10 q_1",
+                description="modified Gravity parameter: log10 charge of 1st object")
+
+mg_log_q_2 = Parameter("mg_log_q_2", dtype=float, default=0., label=r"\log10 q_2",
+                description="modified Gravity parameter: log10 charge of 2nd object")
+
+#mg_p_1 = Parameter("mg_m_s", dtype=float, default=None, label=r"m_s",
+#                description="modified Gravity parameter: scalar mass")
+
 #
 # =============================================================================
 #
@@ -558,6 +587,11 @@ orientation_params = ParameterList\
 # the extrinsic parameters of a waveform
 extrinsic_params = orientation_params + location_params
 
+#mg_params = ParameterList\
+#   ([mg_m_s, mg_c_3, mg_q_1, mg_q_2])
+
+mg_params = ParameterList\
+    ([mg_log_m_s, mg_c_3, mg_log_q_1, mg_log_q_2])
 
 # testing GR parameters
 testingGR_params = ParameterList\
@@ -571,7 +605,7 @@ cbc_intrinsic_params = ParameterList\
     ([mass1, mass2, spin1x, spin1y, spin1z, spin2x, spin2y, spin2z,
       eccentricity, lambda1, lambda2, dquad_mon1, dquad_mon2, lambda_octu1,
       lambda_octu2, quadfmode1, quadfmode2, octufmode1, octufmode2]) + \
-    testingGR_params
+    testingGR_params + mg_params
 
 # the parameters of a cbc in the radiation frame
 cbc_rframe_params = cbc_intrinsic_params + orientation_params

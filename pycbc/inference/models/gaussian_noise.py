@@ -836,7 +836,6 @@ class GaussianNoise(BaseGaussianNoise):
         m1 = params['mass1']
         m2 = params['mass2']
         Ls =  params['tidal_ls']
-        axion_q =  params['axion_q']
         qflip = m2/m1
 
         Fnpow = qflip**(10./(3.-n))
@@ -862,10 +861,11 @@ class GaussianNoise(BaseGaussianNoise):
         lam1 = Ls - La
         lam2 = Ls + La
 
+        #axion_q =  params['axion_q']
         if lam1<0 or lam1>lam2: # TODO: Check rate of occurence
             lam1=lam2=1.
             C1=C2=1.
-            axion_q = 1.
+            #axion_q = 1.
         else:
             # See eq (78) of https://arxiv.org/pdf/1608.02582.pdf
             C1 = a[0] + a[1]*np.log(lam1) + a[2]*np.log(lam1)**2
@@ -883,8 +883,8 @@ class GaussianNoise(BaseGaussianNoise):
 
         # see below eq(13) of https://arxiv.org/pdf/2105.13963.pdf
         # TODO: check significance of m_a=0 condition
-        axion_p = (m1/C1+m2/C2)/(16.0*(m1+m2))
-        params.update(axion_p=axion_p)
+        #axion_p = (m1/C1+m2/C2)/(16.0*(m1+m2))
+        #params.update(axion_p=axion_p)
 
         #print('params:', params)
         return params
